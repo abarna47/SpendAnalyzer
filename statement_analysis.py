@@ -2,7 +2,10 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 
+from open_ai_api import OpenAiApi
+
 folder = 'transactions'
+AI = OpenAiApi()
 
 columns_apple = ['Transaction Date', 'Category', 'Amount (USD)']
 columns_amex = ['Date', 'Amount', 'Category']
@@ -24,12 +27,11 @@ for filename in os.listdir(folder):
 
         all_transactions = pd.concat([all_transactions, df], ignore_index=True)  # Reset the index
 
-print("All transactions:")
-print(all_transactions)
-
 monthly_expenditure = all_transactions.groupby([all_transactions['Date'].dt.to_period('M'), 'Category'])['Amount'].sum().unstack()
 print("\n\nMonthly Expenditure:")
-print(monthly_expenditure)
+
+# Udate category to be consistent across different statements
+monthly_expenditure['Category'] = monthly_expenditure['Category'].apply(AI.get_category)
 
 monthly_expenditure.plot(kind='line', title='Expenditure Trend')
 plt.show()
